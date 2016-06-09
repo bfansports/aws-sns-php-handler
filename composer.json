@@ -1,0 +1,19 @@
+{
+    "name": "sportarchive/aws-sns-php-handler",
+    "description": "Small library to manipulate AWS SNS. Send GCM and APNS messages to topics and endpoints. Format notifications correctly.",
+    "keywords": ["AWS", "SNS"],
+    "type": "library",
+    "authors": [
+	{
+	    "name": "Sport Archive Inc",
+	    "email": "support@sportarchive.tv"
+	}
+    ],
+    "require": {
+	"php": ">=5.5",
+        "aws/aws-sdk-php": "2.*"
+    },
+    "autoload": {
+        "psr-0": { "SA": "src/" }
+    }
+}
