@@ -44,20 +44,31 @@ class SnsHandler
             throw new \Exception("Set 'AWS_DEFAULT_REGION' environment variable!");
         
         $this->region = $region;
-        $this->debug  = $debug;
 
         $this->sns = SnsClient::factory([
                 'region' => $region,
             ]);
     }
 
-    public function createTopic($name)
+    // Publish to many endpoints the same notifications
+    public function publishToEndpoints(
+        $endpoints,
+        $alert,
+        $data,
+        $providers = ["GCM","APNS"],
+        $default = "")
     {
-        return $this->sns->createTopic(array(
-                'Name' => $name,
-            ));
+        foreach ($endpoints as $endpoint)
+        {
+            try {
+                $this->publishToEndpoint($endpoint, $alert, $data, $providers, $default);
+            }
+            catch (\Exception $e) {
+                print "ERROR publish to '$endpoint': ".$e->getMessage()."\n";
+            }
+        }
     }
-
+    
     // $alert contains default keys handled by both Apple and Google.
     // We follow the Google formatting:
     // https://developers.google.com/cloud-messaging/http-server-ref#notification-payload-support
@@ -79,13 +90,13 @@ class SnsHandler
                 throw new \Exception("Provider function doesn't exists for: ".$provider);
             
             // Insert provider alert message in global SNS message
-            $message[$provider] = $this->$provider($alert, $data);
+            $message[$provider] = json_encode($this->$provider($alert, $data));
         }
 
         return $this->sns->publish([
                 'TargetArn'        => $endpoint,
                 'MessageStructure' => 'json',
-                'Message'          => $message
+                'Message'          => json_encode($message)
             ]);
     }
 
@@ -102,7 +113,7 @@ class SnsHandler
 
         return $message;
     }
-
+    
     // Handles Apple notifications. Can be overide if structure needs to be different
     protected function APNS($alert, $data)
     {
