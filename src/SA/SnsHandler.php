@@ -55,9 +55,12 @@ class SnsHandler
         $endpoints,
         $alert,
         $data,
-        $providers = ["GCM","APNS"],
+        $providers = ["GCM","APNS","APNS_SANDBOX"],
         $default = "")
     {
+        
+        print_r("GO PUBLISH endpoints\n");
+        
         foreach ($endpoints as $endpoint)
         {
             try {
@@ -76,13 +79,16 @@ class SnsHandler
         $endpoint,
         $alert,
         $data,
-        $providers = ["GCM","APNS"],
+        $providers = ["GCM","APNS","APNS_SANDBOX"],
         $default = "")
     {
         $message = [
             "default" => $default,
         ];
 
+        
+        print_r("GO PUBLISH 1 endpoint\n");
+        
         // Iterate over all providers and inject custom alert message in global message
         foreach ($providers as $provider)
         {
@@ -93,6 +99,9 @@ class SnsHandler
             $message[$provider] = json_encode($this->$provider($alert, $data));
         }
 
+        print("JSON\n");
+        print_r(json_encode($message));
+        
         return $this->sns->publish([
                 'TargetArn'        => $endpoint,
                 'MessageStructure' => 'json',
@@ -117,6 +126,9 @@ class SnsHandler
     // Handles Apple notifications. Can be overide if structure needs to be different
     protected function APNS($alert, $data)
     {
+        print("ALERT\n");
+        print_r($alert);
+        
         if (isset($alert['body_loc_key'])) {
             $alert['loc_key'] = $alert['body_loc_key'];
             unset($alert['body_loc_key']);
@@ -131,10 +143,18 @@ class SnsHandler
                 "alert" => $alert
             ]
         ];
+        
+        print("MESSAGE\n");
+        print_r($message);
 
         if (!empty($data))
             $message = array_merge($message, $data);
 
         return $message;
+    }
+
+    protected function APNS_SANDBOX($alert, $data)
+    {
+        return $this->APNS($alert, $data);
     }
 }
