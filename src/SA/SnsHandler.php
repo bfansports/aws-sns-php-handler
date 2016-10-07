@@ -55,16 +55,14 @@ class SnsHandler
         $endpoints,
         $alert,
         $data,
+        $options,
         $providers = ["GCM","APNS","APNS_SANDBOX"],
         $default = "")
     {
-        
-        print_r("GO PUBLISH endpoints\n");
-        
         foreach ($endpoints as $endpoint)
         {
             try {
-                $this->publishToEndpoint($endpoint, $alert, $data, $providers, $default);
+                $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default);
             }
             catch (\Exception $e) {
                 print "ERROR publish to '$endpoint': ".$e->getMessage()."\n";
@@ -79,15 +77,13 @@ class SnsHandler
         $endpoint,
         $alert,
         $data,
+        $options,
         $providers = ["GCM","APNS","APNS_SANDBOX"],
         $default = "")
     {
         $message = [
             "default" => $default,
         ];
-
-        
-        print_r("GO PUBLISH 1 endpoint\n");
         
         // Iterate over all providers and inject custom alert message in global message
         foreach ($providers as $provider)
@@ -96,38 +92,64 @@ class SnsHandler
                 throw new \Exception("Provider function doesn't exists for: ".$provider);
             
             // Insert provider alert message in global SNS message
-            $message[$provider] = json_encode($this->$provider($alert, $data));
+            $message[$provider] = json_encode($this->$provider($alert, $data, $options));
         }
 
-        print("JSON\n");
-        print_r(json_encode($message));
+        /* print("JSON\n"); */
+        /* print_r(json_encode($message)); */
+        
+
+        # Default TTL one week
+        $ttl = 604800;
+        if (isset($options['time_to_live'])) {
+            $ttl = $options['time_to_live'];
+        }
         
         return $this->sns->publish([
-                'TargetArn'        => $endpoint,
-                'MessageStructure' => 'json',
-                'Message'          => json_encode($message)
+                'TargetArn'         => $endpoint,
+                'MessageStructure'  => 'json',
+                'Message'           => json_encode($message),
+                'MessageAttributes' => [
+                    'AWS.SNS.MOBILE.APNS.TTL'         => [
+                        "DataType"    => "String",
+                        "StringValue" => "$ttl"
+                    ],
+                    'AWS.SNS.MOBILE.APNS_SANDBOX.TTL' =>[
+                        "DataType"    => "String",
+                        "StringValue" => "$ttl"
+                    ],
+                    'AWS.SNS.MOBILE.GCM.TTL'          =>[
+                        "DataType"    => "String",
+                        "StringValue" => "$ttl"
+                    ]
+                ]
             ]);
     }
 
     // Handles Google notifications. Can be overide if structure needs to be different
-    protected function GCM($alert, $data)
+    protected function GCM($alert, $data, $options)
     {
-        $payload = array_merge($alert, $data);
+        if (!empty($data))
+            $payload = array_merge($alert, $data);
         
         $message = [
             "data" => [
                 "payload" => $payload
             ]
         ];
+        
+        if (isset($options['GCM']))
+            $message = array_merge($message, $options['GCM']);
 
+        /* print("GCM MESSAGE\n"); */
+        /* print_r($message); */
+        
         return $message;
     }
     
     // Handles Apple notifications. Can be overide if structure needs to be different
-    protected function APNS($alert, $data)
+    protected function APNS($alert, $data, $options)
     {
-        print("ALERT\n");
-        print_r($alert);
         
         if (isset($alert['body_loc_key'])) {
             $alert['loc_key'] = $alert['body_loc_key'];
@@ -143,18 +165,21 @@ class SnsHandler
                 "alert" => $alert
             ]
         ];
-        
-        print("MESSAGE\n");
-        print_r($message);
 
+        if (isset($options['APNS']))
+            $message['aps'] = array_merge($message['aps'], $options['APNS']);
+        
         if (!empty($data))
             $message = array_merge($message, $data);
-
+        
+        /* print("APNS MESSAGE\n"); */
+        /* print_r($message); */
+        
         return $message;
     }
 
-    protected function APNS_SANDBOX($alert, $data)
+    protected function APNS_SANDBOX($alert, $data, $options)
     {
-        return $this->APNS($alert, $data);
+        return $this->APNS($alert, $data, $options);
     }
 }
