@@ -83,7 +83,7 @@ class SnsHandler
                 try {
                     $endpoints = array_unique($endpoints);
                     $this->ddb->putItem([
-                        "TableName" => "custom_sns_messages",
+                        "TableName" => "CustomSnsMessages",
                         "Item" => [
                             "body"      => ["S" => $alert['body']],
                             "endpoints" => ["SS" => $endpoints],
@@ -135,7 +135,7 @@ class SnsHandler
             if(isset($alert['body']) && isset($alert['title'])) {
                 try {
                     $this->ddb->putItem([
-                        "TableName" => "custom_sns_messages",
+                        "TableName" => "CustomSnsMessages",
                         "Item" => [
                             "body"      => ["S" => $alert['body']],
                             "endpoints" => ["SS" => [$endpoint]],
