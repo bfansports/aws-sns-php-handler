@@ -182,7 +182,7 @@ class SnsHandler
             ]
         ];
 
-        if (isset($options['GCM']))
+        if (isset($options['GCM']) && count($options['GCM']))
             $message = array_merge($message, $options['GCM']);
 
         /* print("GCM MESSAGE\n"); */
@@ -196,12 +196,20 @@ class SnsHandler
     {
 
         if (isset($alert['body_loc_key'])) {
-            $alert['loc_key'] = $alert['body_loc_key'];
+            $alert['loc-key'] = $alert['body_loc_key'];
             unset($alert['body_loc_key']);
         }
         if (isset($alert['body_loc_args'])) {
-            $alert['loc_args'] = $alert['body_loc_args'];
+            $alert['loc-args'] = $alert['body_loc_args'];
             unset($alert['body_loc_args']);
+        }
+        if (isset($alert['title_loc_key'])) {
+            $alert['title-loc-key'] = $alert['title_loc_key'];
+             unset($alert['title_loc_key']);
+        }
+        if (isset($alert['title_loc_args'])) {
+            $alert['title-loc-args'] = $alert['title_loc_args'];
+             unset($alert['title_loc_args']);
         }
 
         $message = [
@@ -210,7 +218,7 @@ class SnsHandler
             ]
         ];
 
-        if (isset($options['APNS']))
+        if (isset($options['APNS']) && count($options['APNS']))
             $message['aps'] = array_merge($message['aps'], $options['APNS']);
 
         if (!empty($data))
