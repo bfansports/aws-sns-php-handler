@@ -1,31 +1,5 @@
 <?php
 
-/**
- * Copyright (C) 2015, Sport Archive Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License (version 3) as published by
- * the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * For a complete version of the license, head to:
- * http://www.gnu.org/licenses/gpl-3.0.en.html
- *
- * Cloud Processing Engine, Copyright (C) 2015, Sport Archive Inc
- * Cloud Processing Engine comes with ABSOLUTELY NO WARRANTY;
- * This is free software, and you are welcome to redistribute it
- * under certain conditions;
- *
- * June 29th 2015
- * Sport Archive Inc.
- * info@sportarchive.tv
- *
- */
-
 namespace SA;
 
 use Aws\Sns\SnsClient;
