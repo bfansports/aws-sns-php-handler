@@ -20,12 +20,14 @@ class SnsHandler
         $this->region = $region;
 
         $this->sns = new \Aws\Sns\SnsClient([
-                'region' => $region
-            ]);
+            "region" => $region,
+            "version" => "latest",
+        ]);
         
         $this->ddb = new \Aws\DynamoDb\DynamoDbClient([
-                'region' => $region
-            ]);
+            "region" => $region,
+            "version" => "latest",
+        ]);
     }
 
     // Publish to many endpoints the same notifications
