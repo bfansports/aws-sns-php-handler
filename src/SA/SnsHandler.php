@@ -61,7 +61,7 @@ class SnsHandler
                             "body"      => ["S" => $alert['body']],
                             "endpoints" => ["SS" => $endpoints],
                             "org_id"    => ["S" => $data['org_id']],
-                            "timestamp" => ["N" => time()],
+                            "timestamp" => ["N" => (string)time()],
                             "title"     => ["S" => $alert['title']],
                         ],
                     ]);
@@ -113,7 +113,7 @@ class SnsHandler
                             "body"      => ["S" => $alert['body']],
                             "endpoints" => ["SS" => [$endpoint]],
                             "org_id"    => ["S" => $data['org_id']],
-                            "timestamp" => ["N" => time()],
+                            "timestamp" => ["N" => (string)time()],
                             "title"     => ["S" => $alert['title']],
                         ],
                     ]);
