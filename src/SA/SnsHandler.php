@@ -2,9 +2,6 @@
 
 namespace SA;
 
-use Aws\Sns\SnsClient;
-use Aws\DynamoDb\DynamoDbClient;
-
 class SnsHandler
 {
     /** AWS region for SQS **/
@@ -22,13 +19,15 @@ class SnsHandler
 
         $this->region = $region;
 
-        $this->sns = SnsClient::factory([
-                'region' => $region,
-            ]);
-
-        $this->ddb = DynamoDbClient::factory([
-                'region' => $region,
-            ]);
+        $this->sns = new \Aws\Sns\SnsClient([
+            "region" => $region,
+            "version" => "latest",
+        ]);
+        
+        $this->ddb = new \Aws\DynamoDb\DynamoDbClient([
+            "region" => $region,
+            "version" => "latest",
+        ]);
     }
 
     // Publish to many endpoints the same notifications
@@ -62,7 +61,7 @@ class SnsHandler
                             "body"      => ["S" => $alert['body']],
                             "endpoints" => ["SS" => $endpoints],
                             "org_id"    => ["S" => $data['org_id']],
-                            "timestamp" => ["N" => time()],
+                            "timestamp" => ["N" => (string)time()],
                             "title"     => ["S" => $alert['title']],
                         ],
                     ]);
@@ -114,7 +113,7 @@ class SnsHandler
                             "body"      => ["S" => $alert['body']],
                             "endpoints" => ["SS" => [$endpoint]],
                             "org_id"    => ["S" => $data['org_id']],
-                            "timestamp" => ["N" => time()],
+                            "timestamp" => ["N" => (string)time()],
                             "title"     => ["S" => $alert['title']],
                         ],
                     ]);
