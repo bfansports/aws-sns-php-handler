@@ -46,7 +46,7 @@ class SnsHandler
                 $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default, false);
             }
             catch (\Exception $e) {
-                print "ERROR publish to '$endpoint': ".$e->getMessage()."\n";
+                log_message("ERROR", "Cannot publish to '$endpoint': " . $e->getMessage() . "\n");
             }
         }
 
@@ -158,9 +158,6 @@ class SnsHandler
         if (isset($options['GCM']) && count($options['GCM']))
             $message = array_merge($message, $options['GCM']);
 
-        /* print("GCM MESSAGE\n"); */
-        /* print_r($message); */
-
         return $message;
     }
 
@@ -196,9 +193,6 @@ class SnsHandler
 
         if (!empty($data))
             $message = array_merge($message, $data);
-
-        /* print("APNS MESSAGE\n"); */
-        /* print_r($message); */
 
         return $message;
     }
