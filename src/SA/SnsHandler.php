@@ -46,7 +46,17 @@ class SnsHandler
                 $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default, false);
             }
             catch (\Exception $e) {
-                log_message("ERROR", "Cannot publish to '$endpoint': " . $e->getMessage() . "\n");
+                if(function_exists('log_message')) {
+                    log_message("ERROR", "Cannot publish to '$endpoint': " . $e->getMessage() . "\n");
+                } else {
+                    echo "[";
+                    echo date("Y-m-d H:i:s");
+                    echo "] ";
+                    echo "sa_site_daemons.ERROR: ";
+                    echo "Cannot publish to '$endpoint': ";
+                    echo $e->getMessage();
+                    echo "\n";
+                }
             }
         }
 
@@ -66,6 +76,17 @@ class SnsHandler
                         ],
                     ]);
                 } catch(Exception $e) {
+                    if(function_exists('log_message')) {
+                        log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
+                    } else {
+                        echo "[";
+                        echo date("Y-m-d H:i:s");
+                        echo "] ";
+                        echo "sa_site_daemons.ERROR: ";
+                        echo "Cannot insert message into dynamo: ";
+                        echo $e->getMessage();
+                        echo "\n";
+                    }
                 }
             }
         }
@@ -118,6 +139,17 @@ class SnsHandler
                         ],
                     ]);
                 } catch(Exception $e) {
+                    if(function_exists('log_message')) {
+                        log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
+                    } else {
+                        echo "[";
+                        echo date("Y-m-d H:i:s");
+                        echo "] ";
+                        echo "sa_site_daemons.ERROR: ";
+                        echo "Cannot insert message into dynamo: ";
+                        echo $e->getMessage();
+                        echo "\n";
+                    }
                 }
             }
         }
