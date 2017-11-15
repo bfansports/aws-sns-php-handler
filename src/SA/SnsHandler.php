@@ -41,7 +41,8 @@ class SnsHandler {
         $options,
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
-        $save = true) {
+        $save = true,
+        $identity_id) {
         $message = [
             "default" => $default,
         ];
@@ -66,7 +67,7 @@ class SnsHandler {
         if ($save && $data['click_action'] == "custom_msg") {
             if (isset($alert['body']) && isset($alert['title'])) {
                 try {
-                    $this->ddb->putItem([
+                    $data = [
                         "TableName" => "CustomSnsMessages",
                         "Item" => [
                             "body" => ["S" => $alert['body']],
@@ -75,7 +76,13 @@ class SnsHandler {
                             "timestamp" => ["N" => (string) time()],
                             "title" => ["S" => $alert['title']],
                         ],
-                    ]);
+                    ];
+
+                    if (isset($identity_id) && $identity_id != null && $identity_id != "") {
+                        $data['Item']['identity_id'] = ["S" => $identity_id];
+                    }
+
+                    $this->ddb->putItem($data);
                 } catch (Exception $e) {
                     if (function_exists('log_message')) {
                         log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
@@ -121,7 +128,8 @@ class SnsHandler {
         $options,
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
-        $save = true) {
+        $save = true,
+        $identity_id) {
         foreach ($endpoints as $endpoint) {
             try {
                 $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default, false);
@@ -145,7 +153,7 @@ class SnsHandler {
             if (isset($alert['body']) && isset($alert['title'])) {
                 try {
                     $endpoints = array_unique($endpoints);
-                    $this->ddb->putItem([
+                    $data = [
                         "TableName" => "CustomSnsMessages",
                         "Item" => [
                             "body" => ["S" => $alert['body']],
@@ -154,7 +162,13 @@ class SnsHandler {
                             "timestamp" => ["N" => (string) time()],
                             "title" => ["S" => $alert['title']],
                         ],
-                    ]);
+                    ];
+
+                    if (isset($identity_id) && $identity_id != null && $identity_id != "") {
+                        $data['Item']['identity_id'] = ["S" => $identity_id];
+                    }
+
+                    $this->ddb->putItem($data);
                 } catch (Exception $e) {
                     if (function_exists('log_message')) {
                         log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
