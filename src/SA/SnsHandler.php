@@ -42,7 +42,7 @@ class SnsHandler {
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
         $save = true,
-        $identity_id) {
+        $identity_id = null) {
         $message = [
             "default" => $default,
         ];
@@ -129,7 +129,7 @@ class SnsHandler {
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
         $save = true,
-        $identity_id) {
+        $identity_id = null) {
         foreach ($endpoints as $endpoint) {
             try {
                 $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default, false);
