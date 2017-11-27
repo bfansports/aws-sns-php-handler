@@ -64,7 +64,10 @@ class SnsHandler {
         }
 
         // Save our message if needed.
-        if ($save && $data['click_action'] == "custom_msg") {
+        if ($save &&
+            ($data['click_action'] == "custom_msg" ||
+             $data['click_action'] == "score_update" ||
+             $data['click_action'] == "new_quizz_poll")) {
             if (isset($alert['body']) && isset($alert['title'])) {
                 try {
                     $data = [
