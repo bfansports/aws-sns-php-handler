@@ -68,7 +68,11 @@ class SnsHandler {
             ($data['click_action'] == "custom_msg" ||
              $data['click_action'] == "score_update" ||
              $data['click_action'] == "new_quizz_poll")) {
-            if (isset($alert['body']) && isset($alert['title'])) {
+            
+            if (!isset($alert['title']))
+                $alert['title'] = " ";
+            
+            if (isset($alert['body'])) {
                 try {
                     $data = [
                         "TableName" => "CustomSnsMessages",
