@@ -2,6 +2,8 @@
 
 namespace SA;
 
+use Aws\Credentials\CredentialProvider;
+
 class SnsHandler {
     /** AWS DynamoDB handler **/
     private $ddb;
@@ -20,14 +22,18 @@ class SnsHandler {
 
         $this->region = $region;
 
+        $provider = CredentialProvider::defaultProvider();
+
         $this->sns = new \Aws\Sns\SnsClient([
             "region" => $region,
             "version" => "latest",
+            "credentials" => $provider
         ]);
 
         $this->ddb = new \Aws\DynamoDb\DynamoDbClient([
             "region" => $region,
             "version" => "latest",
+            "credentials" => $provider
         ]);
     }
 
