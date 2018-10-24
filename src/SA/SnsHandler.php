@@ -49,6 +49,12 @@ class SnsHandler {
         $default = "",
         $save = true,
         $identity_id = null) {
+
+        // To prevent DynamoDB insert error if no endpoints are provided
+        if (empty($endpoint) || empty($alert))
+            log_message("WARNING", "No valid ENDPOINT or ALERT data. Abording sending to SNS.");
+            return;
+
         $message = [
             "default" => $default,
         ];
@@ -74,10 +80,10 @@ class SnsHandler {
             ($data['click_action'] == "custom_msg" ||
              $data['click_action'] == "score_update" ||
              $data['click_action'] == "new_quizz_poll")) {
-            
+
             if (!isset($alert['title']))
                 $alert['title'] = " ";
-            
+
             if (isset($alert['body'])) {
                 try {
                     $data = [
@@ -143,6 +149,12 @@ class SnsHandler {
         $default = "",
         $save = true,
         $identity_id = null) {
+
+        // To prevent DynamoDB insert error if no endpoints are provided
+        if (empty($endpoints) || empty($alert))
+            log_message("WARNING", "No valid ENDPOINTS or ALERT data. Abording sending to SNS.");
+            return;
+
         foreach ($endpoints as $endpoint) {
             try {
                 $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default, false);
