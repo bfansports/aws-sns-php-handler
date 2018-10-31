@@ -52,7 +52,11 @@ class SnsHandler {
 
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoint) || empty($alert))
-            log_message("WARNING", "No valid ENDPOINT or ALERT data. Abording sending to SNS.");
+            if (function_exists('log_message')) {
+                log_message("WARNING", "No valid ENDPOINT or ALERT data. Abording sending to SNS.");
+            } else {
+                echo "No valid ENDPOINT or ALERT data. Abording sending to SNS.";
+            }
             return;
 
         $message = [
