@@ -51,13 +51,14 @@ class SnsHandler {
         $identity_id = null) {
 
         // To prevent DynamoDB insert error if no endpoints are provided
-        if (empty($endpoint) || empty($alert))
+        if (empty($endpoint) || empty($alert)) {
             if (function_exists('log_message')) {
                 log_message("WARNING", "No valid ENDPOINT or ALERT data. Abording sending to SNS.");
             } else {
                 echo "No valid ENDPOINT or ALERT data. Abording sending to SNS.";
             }
             return;
+        }
 
         $message = [
             "default" => $default,
@@ -155,9 +156,10 @@ class SnsHandler {
         $identity_id = null) {
 
         // To prevent DynamoDB insert error if no endpoints are provided
-        if (empty($endpoints) || empty($alert))
+        if (empty($endpoints) || empty($alert)) {
             log_message("WARNING", "No valid ENDPOINTS or ALERT data. Abording sending to SNS.");
             return;
+        }
 
         foreach ($endpoints as $endpoint) {
             try {
