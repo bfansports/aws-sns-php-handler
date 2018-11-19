@@ -81,46 +81,8 @@ class SnsHandler {
         }
 
         // Save our message if needed.
-        if ($save &&
-            ($data['click_action'] == "custom_msg" ||
-             $data['click_action'] == "score_update" ||
-             $data['click_action'] == "new_quizz_poll")) {
-
-            if (!isset($alert['title']))
-                $alert['title'] = " ";
-
-            if (isset($alert['body'])) {
-                try {
-                    $data = [
-                        "TableName" => "CustomSnsMessages",
-                        "Item" => [
-                            "body" => ["S" => $alert['body']],
-                            "endpoints" => ["SS" => [$endpoint]],
-                            "org_id" => ["S" => $data['org_id']],
-                            "timestamp" => ["N" => (string) time()],
-                            "title" => ["S" => $alert['title']],
-                        ],
-                    ];
-
-                    if (isset($identity_id) && $identity_id != null && $identity_id != "") {
-                        $data['Item']['identity_id'] = ["S" => $identity_id];
-                    }
-
-                    $this->ddb->putItem($data);
-                } catch (Exception $e) {
-                    if (function_exists('log_message')) {
-                        log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
-                    } else {
-                        echo "[";
-                        echo date("Y-m-d H:i:s");
-                        echo "] ";
-                        echo "sa_site_daemons.ERROR: ";
-                        echo "Cannot insert message into dynamo: ";
-                        echo $e->getMessage();
-                        echo "\n";
-                    }
-                }
-            }
+        if ($save) {
+            $this->saveNotifInDB($data, $alert, [$endpoint], $identity_id);
         }
 
         return $this->sns->publish([
@@ -180,38 +142,45 @@ class SnsHandler {
         }
 
         // Save our message if needed.
-        if ($save && $data['click_action'] == "custom_msg") {
-            if (isset($alert['body']) && isset($alert['title'])) {
-                try {
-                    $endpoints = array_unique($endpoints);
-                    $data = [
-                        "TableName" => "CustomSnsMessages",
-                        "Item" => [
-                            "body" => ["S" => $alert['body']],
-                            "endpoints" => ["SS" => $endpoints],
-                            "org_id" => ["S" => $data['org_id']],
-                            "timestamp" => ["N" => (string) time()],
-                            "title" => ["S" => $alert['title']],
-                        ],
-                    ];
+        if ($save) {
+            $this->saveNotifInDB($data, $alert, $endpoints, $identity_id);
+        }
+    }
 
-                    if (isset($identity_id) && $identity_id != null && $identity_id != "") {
-                        $data['Item']['identity_id'] = ["S" => $identity_id];
-                    }
+    private function saveNotifInDB($data, $alert, $endpoints, $identity_id = null) {
+        if (isset($alert['body'])) {
 
-                    $this->ddb->putItem($data);
-                } catch (Exception $e) {
-                    if (function_exists('log_message')) {
-                        log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
-                    } else {
-                        echo "[";
-                        echo date("Y-m-d H:i:s");
-                        echo "] ";
-                        echo "sa_site_daemons.ERROR: ";
-                        echo "Cannot insert message into dynamo: ";
-                        echo $e->getMessage();
-                        echo "\n";
-                    }
+            if (!isset($alert['title']))
+                $alert['title'] = " ";
+
+            try {
+                $data = [
+                    "TableName" => "CustomSnsMessages",
+                    "Item" => [
+                        "body" => ["S" => $alert['body']],
+                        "endpoints" => ["SS" => $endpoints],
+                        "org_id" => ["S" => $data['org_id']],
+                        "timestamp" => ["N" => (string) time()],
+                        "title" => ["S" => $alert['title']],
+                    ],
+                ];
+
+                if (!empty($identity_id)) {
+                    $data['Item']['identity_id'] = ["S" => $identity_id];
+                }
+
+                $this->ddb->putItem($data);
+            } catch (Exception $e) {
+                if (function_exists('log_message')) {
+                    log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
+                } else {
+                    echo "[";
+                    echo date("Y-m-d H:i:s");
+                    echo "] ";
+                    echo "sa_site_daemons.ERROR: ";
+                    echo "Cannot insert message into dynamo: ";
+                    echo $e->getMessage();
+                    echo "\n";
                 }
             }
         }
