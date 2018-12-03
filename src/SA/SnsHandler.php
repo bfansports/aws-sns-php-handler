@@ -217,6 +217,14 @@ class SnsHandler {
         }
 
         if (!empty($data)) {
+            if ( isset($data['media_type']) && isset($data['media_url']) ) {
+                if ( $data['media_type'] == 'image' && !empty($data['media_url']) ) {
+                    $message['media-url'] = $data['media_url'];
+                    $message['aps']['mutable-content'] = 1;
+                }
+                unset($data['media_type']);
+                unset($data['media_url']);
+            }
             $message = array_merge($message, $data);
         }
 
