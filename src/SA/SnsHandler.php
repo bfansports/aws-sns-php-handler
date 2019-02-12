@@ -55,7 +55,7 @@ class SnsHandler {
         if (empty($endpoint) || empty($alert)) {
             $this->log_wrapper(
                 "WARNING",
-                "No valid ENDPOINT or ALERT data. Abording sending to SNS."
+                "No valid ENDPOINT or ALERT data. Aborting sending to SNS."
             );
 
             return;
@@ -126,7 +126,7 @@ class SnsHandler {
         if (empty($endpoints) || empty($alert)) {
             $this->log_wrapper(
                 "WARNING",
-                "No valid ENDPOINTS or ALERT data. Abording sending to SNS."
+                "No valid ENDPOINTS or ALERT data. Aborting sending to SNS."
             );
             return;
         }
