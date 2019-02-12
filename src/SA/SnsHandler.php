@@ -5,13 +5,13 @@ namespace SA;
 use Aws\Credentials\CredentialProvider;
 
 class SnsHandler {
-    /** AWS DynamoDB handler **/
+    // AWS DynamoDB handler
     private $ddb;
 
-    /** AWS region for SQS **/
+    // AWS region for SQS
     private $region;
 
-    /** AWS SNS handler **/
+    // AWS SNS handler
     private $sns;
 
     public function __construct($region = false) {
