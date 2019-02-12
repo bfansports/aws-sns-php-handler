@@ -53,14 +53,11 @@ class SnsHandler {
     ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoint) || empty($alert)) {
-            if (function_exists('log_message')) {
-                log_message(
-                    "WARNING",
-                    "No valid ENDPOINT or ALERT data. Abording sending to SNS."
-                );
-            } else {
-                echo "No valid ENDPOINT or ALERT data. Abording sending to SNS.";
-            }
+            $this->log_wrapper(
+                "WARNING",
+                "No valid ENDPOINT or ALERT data. Abording sending to SNS."
+            );
+
             return;
         }
 
@@ -127,7 +124,7 @@ class SnsHandler {
     ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoints) || empty($alert)) {
-            log_message(
+            $this->log_wrapper(
                 "WARNING",
                 "No valid ENDPOINTS or ALERT data. Abording sending to SNS."
             );
@@ -146,22 +143,10 @@ class SnsHandler {
                     false
                 );
             } catch (\Exception $e) {
-                if (function_exists('log_message')) {
-                    log_message(
-                        "ERROR",
-                        "Cannot publish to '$endpoint': " .
-                            $e->getMessage() .
-                            "\n"
-                    );
-                } else {
-                    echo "[";
-                    echo date("Y-m-d H:i:s");
-                    echo "] ";
-                    echo "sa_site_daemons.ERROR: ";
-                    echo "Cannot publish to '$endpoint': ";
-                    echo $e->getMessage();
-                    echo "\n";
-                }
+                $this->log_wrapper(
+                    "ERROR",
+                    "Cannot publish to '$endpoint': " . $e->getMessage() . "\n"
+                );
             }
         }
 
@@ -200,23 +185,25 @@ class SnsHandler {
 
                 $this->ddb->putItem($data);
             } catch (Exception $e) {
-                if (function_exists('log_message')) {
-                    log_message(
-                        "ERROR",
-                        "Cannot insert message into dynamo: " .
-                            $e->getMessage() .
-                            "\n"
-                    );
-                } else {
-                    echo "[";
-                    echo date("Y-m-d H:i:s");
-                    echo "] ";
-                    echo "sa_site_daemons.ERROR: ";
-                    echo "Cannot insert message into dynamo: ";
-                    echo $e->getMessage();
-                    echo "\n";
-                }
+                $this->log_wrapper(
+                    "ERROR",
+                    "Cannot insert message into dynamo: " .
+                        $e->getMessage() .
+                        "\n"
+                );
             }
+        }
+    }
+
+    private function log_wrapper($type, $message) {
+        if (function_exists('log_message')) {
+            log_message($type, $message);
+        } else {
+            $out = "";
+            $out .= "[" . date("Y-m-d H:i:s") . "] ";
+            $out .= "sa_site_daemons." . $type . ": ";
+            $out .= $message;
+            echo $out;
         }
     }
 
