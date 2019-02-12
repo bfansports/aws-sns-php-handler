@@ -15,9 +15,10 @@ class SnsHandler {
     private $sns;
 
     public function __construct($region = false) {
-        if (!$region &&
-            !($region = getenv("AWS_DEFAULT_REGION"))) {
-            throw new \Exception("Set 'AWS_DEFAULT_REGION' environment variable!");
+        if (!$region && !($region = getenv("AWS_DEFAULT_REGION"))) {
+            throw new \Exception(
+                "Set 'AWS_DEFAULT_REGION' environment variable!"
+            );
         }
 
         $this->region = $region;
@@ -27,13 +28,13 @@ class SnsHandler {
         $this->sns = new \Aws\Sns\SnsClient([
             "region" => $region,
             "version" => "latest",
-            "credentials" => $provider
+            "credentials" => $provider,
         ]);
 
         $this->ddb = new \Aws\DynamoDb\DynamoDbClient([
             "region" => $region,
             "version" => "latest",
-            "credentials" => $provider
+            "credentials" => $provider,
         ]);
     }
 
@@ -48,12 +49,15 @@ class SnsHandler {
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
         $save = true,
-        $identity_id = null) {
-
+        $identity_id = null
+    ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoint) || empty($alert)) {
             if (function_exists('log_message')) {
-                log_message("WARNING", "No valid ENDPOINT or ALERT data. Abording sending to SNS.");
+                log_message(
+                    "WARNING",
+                    "No valid ENDPOINT or ALERT data. Abording sending to SNS."
+                );
             } else {
                 echo "No valid ENDPOINT or ALERT data. Abording sending to SNS.";
             }
@@ -67,11 +71,15 @@ class SnsHandler {
         // Iterate over all providers and inject custom alert message in global message
         foreach ($providers as $provider) {
             if (!method_exists($this, $provider)) {
-                throw new \Exception("Provider function doesn't exists for: " . $provider);
+                throw new \Exception(
+                    "Provider function doesn't exists for: " . $provider
+                );
             }
 
             // Insert provider alert message in global SNS message
-            $message[$provider] = json_encode($this->$provider($alert, $data, $options));
+            $message[$provider] = json_encode(
+                $this->$provider($alert, $data, $options)
+            );
         }
 
         // Default TTL one week
@@ -115,20 +123,36 @@ class SnsHandler {
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
         $save = true,
-        $identity_id = null) {
-
+        $identity_id = null
+    ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoints) || empty($alert)) {
-            log_message("WARNING", "No valid ENDPOINTS or ALERT data. Abording sending to SNS.");
+            log_message(
+                "WARNING",
+                "No valid ENDPOINTS or ALERT data. Abording sending to SNS."
+            );
             return;
         }
 
         foreach ($endpoints as $endpoint) {
             try {
-                $this->publishToEndpoint($endpoint, $alert, $data, $options, $providers, $default, false);
+                $this->publishToEndpoint(
+                    $endpoint,
+                    $alert,
+                    $data,
+                    $options,
+                    $providers,
+                    $default,
+                    false
+                );
             } catch (\Exception $e) {
                 if (function_exists('log_message')) {
-                    log_message("ERROR", "Cannot publish to '$endpoint': " . $e->getMessage() . "\n");
+                    log_message(
+                        "ERROR",
+                        "Cannot publish to '$endpoint': " .
+                            $e->getMessage() .
+                            "\n"
+                    );
                 } else {
                     echo "[";
                     echo date("Y-m-d H:i:s");
@@ -147,11 +171,16 @@ class SnsHandler {
         }
     }
 
-    private function saveNotifInDB($data, $alert, $endpoints, $identity_id = null) {
+    private function saveNotifInDB(
+        $data,
+        $alert,
+        $endpoints,
+        $identity_id = null
+    ) {
         if (isset($alert['body'])) {
-
-            if (!isset($alert['title']))
+            if (!isset($alert['title'])) {
                 $alert['title'] = " ";
+            }
 
             try {
                 $data = [
@@ -172,7 +201,12 @@ class SnsHandler {
                 $this->ddb->putItem($data);
             } catch (Exception $e) {
                 if (function_exists('log_message')) {
-                    log_message("ERROR", "Cannot insert message into dynamo: " . $e->getMessage() . "\n");
+                    log_message(
+                        "ERROR",
+                        "Cannot insert message into dynamo: " .
+                            $e->getMessage() .
+                            "\n"
+                    );
                 } else {
                     echo "[";
                     echo date("Y-m-d H:i:s");
@@ -188,7 +222,6 @@ class SnsHandler {
 
     // Handles Apple notifications. Can be overide if structure needs to be different
     protected function APNS($alert, $data, $options) {
-
         if (isset($alert['body_loc_key'])) {
             $alert['loc-key'] = $alert['body_loc_key'];
             unset($alert['body_loc_key']);
@@ -217,8 +250,11 @@ class SnsHandler {
         }
 
         if (!empty($data)) {
-            if ( isset($data['media_type']) && isset($data['media_url']) ) {
-                if ( $data['media_type'] == 'image' && !empty($data['media_url']) ) {
+            if (isset($data['media_type']) && isset($data['media_url'])) {
+                if (
+                    $data['media_type'] == 'image' &&
+                    !empty($data['media_url'])
+                ) {
                     $message['media-url'] = $data['media_url'];
                     $message['aps']['mutable-content'] = 1;
                 }
