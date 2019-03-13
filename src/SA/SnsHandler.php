@@ -120,7 +120,8 @@ class SnsHandler {
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
         $save = true,
-        $identity_id = null
+        $identity_id = null,
+        $segments = null
     ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoints) || empty($alert)) {
@@ -152,7 +153,8 @@ class SnsHandler {
 
         // Save our message if needed.
         if ($save) {
-            $this->saveNotifInDB($data, $alert, $endpoints, $identity_id);
+            $this->saveNotifInDB($data, $alert, $endpoints, $identity_id, $segments);
+
         }
     }
 
@@ -160,10 +162,11 @@ class SnsHandler {
         $data,
         $alert,
         $endpoints,
-        $identity_id = null
+        $identity_id = null,
+        $segments = null
     ) {
         if (isset($alert['body'])) {
-            if (!isset($alert['title'])) {
+            if (empty($alert['title'])) {
                 $alert['title'] = " ";
             }
 
@@ -175,7 +178,7 @@ class SnsHandler {
                         "endpoints" => ["SS" => $endpoints],
                         "org_id" => ["S" => $data['org_id']],
                         "timestamp" => ["N" => (string) time()],
-                        "title" => ["S" => $alert['title']],
+                        "title" => ["S" => $alert['title']]
                     ],
                 ];
 
@@ -183,7 +186,11 @@ class SnsHandler {
                     $data['Item']['identity_id'] = ["S" => $identity_id];
                 }
 
-                $this->ddb->putItem($data);
+                if ( !empty($segments) ) {
+                    $data['Item']['segments'] = ["SS" => $segments];
+                }
+
+                $result = $this->ddb->putItem($data);
             } catch (Exception $e) {
                 $this->log_wrapper(
                     "ERROR",
