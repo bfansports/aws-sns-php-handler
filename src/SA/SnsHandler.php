@@ -193,6 +193,9 @@ class SnsHandler {
 
                 if (!empty($segments)) {
                     $data['Item']['segments'] = ["SS" => $segments];
+                    $data['Item'][
+                        'segment_counts'
+                    ] = $this->getMarshalledSegmentCounts($segments);
                 }
 
                 $result = $this->ddb->putItem($data);
@@ -217,6 +220,38 @@ class SnsHandler {
             $out .= $message;
             echo $out;
         }
+    }
+
+    private static function getMarshalledSegmentCounts($segments) {
+        $counts = [
+            "M" => [
+                "default" => [
+                    "N" => 0,
+                ],
+                "favorite" => [
+                    "N" => 0,
+                ],
+                "language" => [
+                    "N" => 0,
+                ],
+            ],
+        ];
+
+        if (isset($segments)) {
+            foreach ($segments as $seg) {
+                $temp = explode("_", $seg);
+
+                if ($temp[0] == "fav") {
+                    $counts['M']['favorite']['N']++;
+                } elseif ($temp[0] == "lang") {
+                    $counts['M']['language']['N']++;
+                } else {
+                    $counts['M']['default']['N']++;
+                }
+            }
+        }
+
+        return $counts;
     }
 
     // Handles Apple notifications. Can be overide if structure needs to be different
