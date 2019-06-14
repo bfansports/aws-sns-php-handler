@@ -153,8 +153,13 @@ class SnsHandler {
 
         // Save our message if needed.
         if ($save) {
-            $this->saveNotifInDB($data, $alert, $endpoints, $identity_id, $segments);
-
+            $this->saveNotifInDB(
+                $data,
+                $alert,
+                $endpoints,
+                $identity_id,
+                $segments
+            );
         }
     }
 
@@ -178,7 +183,7 @@ class SnsHandler {
                         "endpoints" => ["SS" => $endpoints],
                         "org_id" => ["S" => $data['org_id']],
                         "timestamp" => ["N" => (string) time()],
-                        "title" => ["S" => $alert['title']]
+                        "title" => ["S" => $alert['title']],
                     ],
                 ];
 
@@ -186,7 +191,7 @@ class SnsHandler {
                     $data['Item']['identity_id'] = ["S" => $identity_id];
                 }
 
-                if ( !empty($segments) ) {
+                if (!empty($segments)) {
                     $data['Item']['segments'] = ["SS" => $segments];
                 }
 
