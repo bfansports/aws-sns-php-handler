@@ -251,6 +251,10 @@ class SnsHandler {
             }
         }
 
+        $counts['M']['favorite']['N'] = (string) $counts['M']['favorite']['N'];
+        $counts['M']['language']['N'] = (string) $counts['M']['language']['N'];
+        $counts['M']['default']['N'] = (string) $counts['M']['default']['N'];
+
         return $counts;
     }
 
