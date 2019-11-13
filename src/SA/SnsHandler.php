@@ -49,7 +49,9 @@ class SnsHandler {
         $providers = ["GCM", "APNS", "APNS_SANDBOX"],
         $default = "",
         $save = true,
-        $identity_id = null
+        $identity_id = null,
+        $segments = null,
+        $marketing = false
     ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoint) || empty($alert)) {
@@ -121,7 +123,8 @@ class SnsHandler {
         $default = "",
         $save = true,
         $identity_id = null,
-        $segments = null
+        $segments = null,
+        $marketing = false
     ) {
         // To prevent DynamoDB insert error if no endpoints are provided
         if (empty($endpoints) || empty($alert)) {
@@ -141,7 +144,10 @@ class SnsHandler {
                     $options,
                     $providers,
                     $default,
-                    false
+                    false,
+                    $identity_id,
+                    $segments,
+                    $marketing
                 );
             } catch (\Exception $e) {
                 $this->log_wrapper(
@@ -158,7 +164,8 @@ class SnsHandler {
                 $alert,
                 $endpoints,
                 $identity_id,
-                $segments
+                $segments,
+                $marketing
             );
         }
     }
@@ -168,7 +175,8 @@ class SnsHandler {
         $alert,
         $endpoints,
         $identity_id = null,
-        $segments = null
+        $segments = null,
+        $marketing = false
     ) {
         if (isset($alert['body'])) {
             if (empty($alert['title'])) {
@@ -176,7 +184,7 @@ class SnsHandler {
             }
 
             try {
-                $data = [
+                $dbData = [
                     "TableName" => "CustomSnsMessages",
                     "Item" => [
                         "body" => ["S" => $alert['body']],
@@ -184,21 +192,30 @@ class SnsHandler {
                         "org_id" => ["S" => $data['org_id']],
                         "timestamp" => ["N" => (string) time()],
                         "title" => ["S" => $alert['title']],
+                        "marketing" => ["BOOL" => $marketing],
+                        "sso_webview" => ["BOOL" => !empty($data['sso_webview'])]
                     ],
                 ];
 
+                if ( !empty($data["link_type"]) ) {
+                    $dbData['Item']['link_type'] = ["S" => $data["link_type"]];
+                    if ( !empty($data["link_url"]) ) {
+                        $dbData['Item']['link_url'] = ["S" => $data["link_url"]];
+                    }
+                }
+
                 if (!empty($identity_id)) {
-                    $data['Item']['identity_id'] = ["S" => $identity_id];
+                    $dbData['Item']['identity_id'] = ["S" => $identity_id];
                 }
 
                 if (!empty($segments)) {
-                    $data['Item']['segments'] = ["SS" => $segments];
-                    $data['Item'][
+                    $dbData['Item']['segments'] = ["SS" => $segments];
+                    $dbData['Item'][
                         'segment_counts'
                     ] = $this->getMarshalledSegmentCounts($segments);
                 }
 
-                $result = $this->ddb->putItem($data);
+                $result = $this->ddb->putItem($dbData);
             } catch (Exception $e) {
                 $this->log_wrapper(
                     "ERROR",
