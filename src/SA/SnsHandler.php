@@ -192,8 +192,7 @@ class SnsHandler {
                         "org_id" => ["S" => $data['org_id']],
                         "timestamp" => ["N" => (string) time()],
                         "title" => ["S" => $alert['title']],
-                        "marketing" => ["BOOL" => $marketing],
-                        "sso_webview" => ["BOOL" => !empty($data['sso_webview'])]
+                        "marketing" => ["BOOL" => $marketing]
                     ],
                 ];
 
