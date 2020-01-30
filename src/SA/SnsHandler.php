@@ -196,6 +196,10 @@ class SnsHandler {
                     ],
                 ];
 
+                if ( !empty($data['click_action']) ) {
+                    $dbData['Item']['click_action'] = ["S" => $data["click_action"]];
+                }
+
                 if ( !empty($data["link_type"]) ) {
                     $dbData['Item']['link_type'] = ["S" => $data["link_type"]];
                     if ( !empty($data["link_url"]) ) {
