@@ -77,7 +77,7 @@ class SnsHandler {
 
             // Insert provider alert message in global SNS message
             $message[$provider] = json_encode(
-                $this->$provider($alert, $data, $options)
+                $this->$provider($alert, $data, $options, $identity_id)
             );
         }
 
@@ -279,7 +279,7 @@ class SnsHandler {
     }
 
     // Handles Apple notifications. Can be overide if structure needs to be different
-    protected function APNS($alert, $data, $options) {
+    protected function APNS($alert, $data, $options, $identity_id = null) {
         if (isset($alert['body_loc_key'])) {
             $alert['loc-key'] = $alert['body_loc_key'];
             unset($alert['body_loc_key']);
@@ -322,15 +322,19 @@ class SnsHandler {
             $message = array_merge($message, $data);
         }
 
+        if ( !empty($identity_id) ) {
+            $message['identity_id'] = $identity_id;
+        }
+
         return $message;
     }
 
-    protected function APNS_SANDBOX($alert, $data, $options) {
-        return $this->APNS($alert, $data, $options);
+    protected function APNS_SANDBOX($alert, $data, $options, $identity_id = null) {
+        return $this->APNS($alert, $data, $options, $identity_id);
     }
 
     // Handles Google notifications. Can be overide if structure needs to be different
-    protected function GCM($alert, $data, $options) {
+    protected function GCM($alert, $data, $options, $identity_id = null) {
         if (!empty($data)) {
             $payload = array_merge($alert, $data);
         }
@@ -343,6 +347,10 @@ class SnsHandler {
 
         if (isset($options['GCM']) && count($options['GCM'])) {
             $message = array_merge($message, $options['GCM']);
+        }
+
+        if ( !empty($identity_id) ) {
+            $message['identity_id'] = $identity_id;
         }
 
         return $message;
