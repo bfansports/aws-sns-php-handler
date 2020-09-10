@@ -151,7 +151,7 @@ class SnsHandler {
                 );
             } catch (\Exception $e) {
                 $this->log_wrapper(
-                    "ERROR",
+                    "WARNING",
                     "Cannot publish to '$endpoint': " . $e->getMessage() . "\n"
                 );
             }
