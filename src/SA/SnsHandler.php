@@ -300,7 +300,8 @@ class SnsHandler {
         $message = [
             "aps" => [
                 "alert" => $alert,
-            ],
+                "mutable-content" => 1
+            ]
         ];
 
         if (isset($options['APNS']) && count($options['APNS'])) {
@@ -310,11 +311,11 @@ class SnsHandler {
         if (!empty($data)) {
             if (isset($data['media_type']) && isset($data['media_url'])) {
                 if (
-                    $data['media_type'] == 'image' &&
-                    !empty($data['media_url'])
+                    !empty($data['media_type']) &&
+                    !empty($data['media_url']) &&
+                    $data['media_type'] == 'image'
                 ) {
                     $message['media-url'] = $data['media_url'];
-                    $message['aps']['mutable-content'] = 1;
                 }
                 unset($data['media_type']);
                 unset($data['media_url']);
