@@ -309,8 +309,12 @@ class SnsHandler {
         }
 
         if (!empty($data)) {
-            if (!empty($data['media_type']) && !empty($data['media_url'])) {
-                if ($data['media_type'] == 'image') {
+            if (isset($data['media_type']) && isset($data['media_url'])) {
+                if (
+                    !empty($data['media_type']) &&
+                    !empty($data['media_url']) &&
+                    $data['media_type'] == 'image'
+                ) {
                     $message['media-url'] = $data['media_url'];
                 }
                 unset($data['media_type']);
