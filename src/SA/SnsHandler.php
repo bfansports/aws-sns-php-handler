@@ -280,47 +280,44 @@ class SnsHandler {
 
     // Handles Apple notifications. Can be overide if structure needs to be different
     protected function APNS($alert, $data, $options, $identity_id = null) {
-        if (isset($alert['body_loc_key'])) {
-            $alert['loc-key'] = $alert['body_loc_key'];
+
+        if ( array_key_exists('body_loc_key', $alert) ) {
+            if ( !empty($alert['body_loc_key']) ) {
+                $alert['loc-key'] = $alert['body_loc_key'];
+            }
             unset($alert['body_loc_key']);
         }
-        if (isset($alert['body_loc_args'])) {
-            $alert['loc-args'] = $alert['body_loc_args'];
+
+        if ( array_key_exists('body_loc_args', $alert) ) {
+            if ( !empty($alert['body_loc_args']) ) {
+                $alert['loc-args'] = $alert['body_loc_args'];
+            }
             unset($alert['body_loc_args']);
         }
-        if (isset($alert['title_loc_key'])) {
-            $alert['title-loc-key'] = $alert['title_loc_key'];
+
+        if ( array_key_exists('title_loc_key', $alert) ) {
+            if ( !empty($alert['title_loc_key']) ) {
+                $alert['title-loc-key'] = $alert['title_loc_key'];
+            }
             unset($alert['title_loc_key']);
         }
-        if (isset($alert['title_loc_args'])) {
-            $alert['title-loc-args'] = $alert['title_loc_args'];
+
+        if ( array_key_exists('title_loc_args', $alert) ) {
+            if ( !empty($alert['title_loc_args']) ) {
+                $alert['title-loc-args'] = $alert['title_loc_args'];
+            }
             unset($alert['title_loc_args']);
         }
 
         $message = [
             "aps" => [
                 "alert" => $alert,
-                "mutable-content" => 1
-            ]
+            ],
+            "data" => $data
         ];
 
         if (isset($options['APNS']) && count($options['APNS'])) {
-            $message['aps'] = array_merge($message['aps'], $options['APNS']);
-        }
-
-        if (!empty($data)) {
-            if (isset($data['media_type']) && isset($data['media_url'])) {
-                if (
-                    !empty($data['media_type']) &&
-                    !empty($data['media_url']) &&
-                    $data['media_type'] == 'image'
-                ) {
-                    $message['media-url'] = $data['media_url'];
-                }
-                unset($data['media_type']);
-                unset($data['media_url']);
-            }
-            $message = array_merge($message, $data);
+            $message = array_merge_recursive($message, $options['APNS']);
         }
 
         if ( !empty($identity_id) ) {
@@ -336,22 +333,18 @@ class SnsHandler {
 
     // Handles Google notifications. Can be overide if structure needs to be different
     protected function GCM($alert, $data, $options, $identity_id = null) {
-        if (!empty($data)) {
-            $payload = array_merge($alert, $data);
-        }
 
         $message = [
-            "data" => [
-                "payload" => $payload,
-            ],
+            "notification" => $alert,
+            "data" => $data,
         ];
 
-        if (isset($options['GCM']) && count($options['GCM'])) {
-            $message = array_merge($message, $options['GCM']);
+        if ( !empty($options['GCM']) ) {
+            $message = array_merge_recursive($message, $options['GCM']);
         }
 
         if ( !empty($identity_id) ) {
-            $message['identity_id'] = $identity_id;
+            $message['data']['identity_id'] = $identity_id;
         }
 
         return $message;
