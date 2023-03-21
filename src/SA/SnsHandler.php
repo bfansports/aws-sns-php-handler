@@ -347,6 +347,8 @@ class SnsHandler {
             $message['data']['identity_id'] = $identity_id;
         }
 
-        return $message;
+        return [
+            'data' => $message
+        ];
     }
 }
