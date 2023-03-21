@@ -87,6 +87,11 @@ class SnsHandler {
             $ttl = $options['time_to_live'];
         }
 
+        $this->log_wrapper("INFO", 'SNS_Messages:' . json_encode([
+            'APNS' => json_decode($message['APNS']),
+            'GCM' => json_decode($message['GCM'])
+        ]));
+
         // Save our message if needed.
         if ($save) {
             $this->saveNotifInDB($data, $alert, [$endpoint], $identity_id);
@@ -196,17 +201,6 @@ class SnsHandler {
                     ],
                 ];
 
-                if ( !empty($data['click_action']) ) {
-                    $dbData['Item']['click_action'] = ["S" => $data["click_action"]];
-                }
-
-                if ( !empty($data["link_type"]) ) {
-                    $dbData['Item']['link_type'] = ["S" => $data["link_type"]];
-                    if ( !empty($data["link_url"]) ) {
-                        $dbData['Item']['link_url'] = ["S" => $data["link_url"]];
-                    }
-                }
-
                 if (!empty($identity_id)) {
                     $dbData['Item']['identity_id'] = ["S" => $identity_id];
                 }
@@ -219,6 +213,7 @@ class SnsHandler {
                 }
 
                 $result = $this->ddb->putItem($dbData);
+
             } catch (Exception $e) {
                 $this->log_wrapper(
                     "ERROR",
@@ -321,7 +316,7 @@ class SnsHandler {
         }
 
         if ( !empty($identity_id) ) {
-            $message['identity_id'] = $identity_id;
+            $message['data']['identity_id'] = $identity_id;
         }
 
         return $message;
