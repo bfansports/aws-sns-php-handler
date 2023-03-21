@@ -348,7 +348,8 @@ class SnsHandler {
         }
 
         return [
-            'data' => $message
+            'data' => $message,
+            'priority' => 'high'
         ];
     }
 }
