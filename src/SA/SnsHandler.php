@@ -281,32 +281,32 @@ class SnsHandler {
     // Handles Apple notifications. Can be overide if structure needs to be different
     protected function APNS($alert, $data, $options, $identity_id = null) {
 
-        if ( array_key_exists('body_loc_key', $alert) ) {
-            if ( !empty($alert['body_loc_key']) ) {
-                $alert['loc-key'] = $alert['body_loc_key'];
+        if ( array_key_exists('bodyLocKey', $alert) ) {
+            if ( !empty($alert['bodyLocKey']) ) {
+                $alert['loc-key'] = $alert['bodyLocKey'];
             }
-            unset($alert['body_loc_key']);
+            unset($alert['bodyLocKey']);
         }
 
-        if ( array_key_exists('body_loc_args', $alert) ) {
-            if ( !empty($alert['body_loc_args']) ) {
-                $alert['loc-args'] = $alert['body_loc_args'];
+        if ( array_key_exists('bodyLocArgs', $alert) ) {
+            if ( !empty($alert['bodyLocArgs']) ) {
+                $alert['loc-args'] = $alert['bodyLocArgs'];
             }
-            unset($alert['body_loc_args']);
+            unset($alert['bodyLocArgs']);
         }
 
-        if ( array_key_exists('title_loc_key', $alert) ) {
-            if ( !empty($alert['title_loc_key']) ) {
-                $alert['title-loc-key'] = $alert['title_loc_key'];
+        if ( array_key_exists('titleLocKey', $alert) ) {
+            if ( !empty($alert['titleLocKey']) ) {
+                $alert['title-loc-key'] = $alert['titleLocKey'];
             }
-            unset($alert['title_loc_key']);
+            unset($alert['titleLocKey']);
         }
 
-        if ( array_key_exists('title_loc_args', $alert) ) {
-            if ( !empty($alert['title_loc_args']) ) {
-                $alert['title-loc-args'] = $alert['title_loc_args'];
+        if ( array_key_exists('titleLocArgs', $alert) ) {
+            if ( !empty($alert['titleLocArgs']) ) {
+                $alert['title-loc-args'] = $alert['titleLocArgs'];
             }
-            unset($alert['title_loc_args']);
+            unset($alert['titleLocArgs']);
         }
 
         $message = [
