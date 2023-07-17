@@ -319,6 +319,19 @@ class SnsHandler {
             $message['data']['identity_id'] = $identity_id;
         }
 
+        // start old apps compatibility
+        $message = array_merge_recursive($message, $message['data']);
+        $type = $message['data']['org_id'];
+        if ( !empty($message['data']['type']) && !empty($message['data']['subtype']) ) {
+            $type = ($message['data']['type'] ?? '') . '_' . ($message['data']['subtype'] ?? '');
+        }
+        $link_type = !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? 'url': null;
+        $link_url = !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? $message['data']['deeplink']['url']: null;
+        $message['type'] = $type;
+        $message['link_type'] = $link_type;
+        $message['link_url'] = $link_url;
+        // end old apps compatibility
+
         return $message;
     }
 
@@ -341,6 +354,18 @@ class SnsHandler {
         if ( !empty($identity_id) ) {
             $message['data']['identity_id'] = $identity_id;
         }
+
+        // start old apps compatibility
+        $message['payload'] = [
+            'title' => $message['notification']['title'] ?? '',
+            'body' => $message['notification']['body'] ?? '',
+            'org_id' => $message['data']['org_id'] ?? '',
+            'click_action' => $message['notification']['clickAction'] ?? '',
+            'link_type' => !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? 'url': null,
+            'link_url' => !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? $message['data']['deeplink']['url']: null,
+            'type' => $type,
+        ];
+        // end old apps compatibility
 
         return [
             'data' => $message,
