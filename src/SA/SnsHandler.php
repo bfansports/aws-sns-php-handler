@@ -355,6 +355,12 @@ class SnsHandler {
             $message['data']['identity_id'] = $identity_id;
         }
 
+        $type = $message['data']['org_id'];
+
+        if ( !empty($message['data']['type']) && !empty($message['data']['subtype']) ) {
+            $type = ($message['data']['type'] ?? '') . '_' . ($message['data']['subtype'] ?? '');
+        }
+
         // start old apps compatibility
         $message['payload'] = [
             'title' => $message['notification']['title'] ?? '',
