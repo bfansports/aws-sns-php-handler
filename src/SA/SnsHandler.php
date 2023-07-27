@@ -87,6 +87,11 @@ class SnsHandler {
             $ttl = $options['time_to_live'];
         }
 
+        $this->log_wrapper("INFO", 'SNS_Messages:' . json_encode([
+            'APNS' => json_decode($message['APNS']),
+            'GCM' => json_decode($message['GCM'])
+        ]));
+
         // Save our message if needed.
         if ($save) {
             $this->saveNotifInDB($data, $alert, [$endpoint], $identity_id);
@@ -196,17 +201,6 @@ class SnsHandler {
                     ],
                 ];
 
-                if ( !empty($data['click_action']) ) {
-                    $dbData['Item']['click_action'] = ["S" => $data["click_action"]];
-                }
-
-                if ( !empty($data["link_type"]) ) {
-                    $dbData['Item']['link_type'] = ["S" => $data["link_type"]];
-                    if ( !empty($data["link_url"]) ) {
-                        $dbData['Item']['link_url'] = ["S" => $data["link_url"]];
-                    }
-                }
-
                 if (!empty($identity_id)) {
                     $dbData['Item']['identity_id'] = ["S" => $identity_id];
                 }
@@ -219,6 +213,7 @@ class SnsHandler {
                 }
 
                 $result = $this->ddb->putItem($dbData);
+
             } catch (Exception $e) {
                 $this->log_wrapper(
                     "ERROR",
@@ -280,51 +275,62 @@ class SnsHandler {
 
     // Handles Apple notifications. Can be overide if structure needs to be different
     protected function APNS($alert, $data, $options, $identity_id = null) {
-        if (isset($alert['body_loc_key'])) {
-            $alert['loc-key'] = $alert['body_loc_key'];
-            unset($alert['body_loc_key']);
+
+        if ( array_key_exists('bodyLocKey', $alert) ) {
+            if ( !empty($alert['bodyLocKey']) ) {
+                $alert['loc-key'] = $alert['bodyLocKey'];
+            }
+            unset($alert['bodyLocKey']);
         }
-        if (isset($alert['body_loc_args'])) {
-            $alert['loc-args'] = $alert['body_loc_args'];
-            unset($alert['body_loc_args']);
+
+        if ( array_key_exists('bodyLocArgs', $alert) ) {
+            if ( !empty($alert['bodyLocArgs']) ) {
+                $alert['loc-args'] = $alert['bodyLocArgs'];
+            }
+            unset($alert['bodyLocArgs']);
         }
-        if (isset($alert['title_loc_key'])) {
-            $alert['title-loc-key'] = $alert['title_loc_key'];
-            unset($alert['title_loc_key']);
+
+        if ( array_key_exists('titleLocKey', $alert) ) {
+            if ( !empty($alert['titleLocKey']) ) {
+                $alert['title-loc-key'] = $alert['titleLocKey'];
+            }
+            unset($alert['titleLocKey']);
         }
-        if (isset($alert['title_loc_args'])) {
-            $alert['title-loc-args'] = $alert['title_loc_args'];
-            unset($alert['title_loc_args']);
+
+        if ( array_key_exists('titleLocArgs', $alert) ) {
+            if ( !empty($alert['titleLocArgs']) ) {
+                $alert['title-loc-args'] = $alert['titleLocArgs'];
+            }
+            unset($alert['titleLocArgs']);
         }
 
         $message = [
             "aps" => [
                 "alert" => $alert,
             ],
+            "data" => $data
         ];
 
         if (isset($options['APNS']) && count($options['APNS'])) {
-            $message['aps'] = array_merge($message['aps'], $options['APNS']);
-        }
-
-        if (!empty($data)) {
-            if (isset($data['media_type']) && isset($data['media_url'])) {
-                if (
-                    $data['media_type'] == 'image' &&
-                    !empty($data['media_url'])
-                ) {
-                    $message['media-url'] = $data['media_url'];
-                    $message['aps']['mutable-content'] = 1;
-                }
-                unset($data['media_type']);
-                unset($data['media_url']);
-            }
-            $message = array_merge($message, $data);
+            $message = array_merge_recursive($message, $options['APNS']);
         }
 
         if ( !empty($identity_id) ) {
-            $message['identity_id'] = $identity_id;
+            $message['data']['identity_id'] = $identity_id;
         }
+
+        // start old apps compatibility
+        $message = array_merge_recursive($message, $message['data']);
+        $type = $message['data']['org_id'];
+        if ( !empty($message['data']['type']) && !empty($message['data']['subtype']) ) {
+            $type = ($message['data']['type'] ?? '') . '_' . ($message['data']['subtype'] ?? '');
+        }
+        $link_type = !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? 'url': null;
+        $link_url = !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? $message['data']['deeplink']['url']: null;
+        $message['type'] = $type;
+        $message['link_type'] = $link_type;
+        $message['link_url'] = $link_url;
+        // end old apps compatibility
 
         return $message;
     }
@@ -335,24 +341,41 @@ class SnsHandler {
 
     // Handles Google notifications. Can be overide if structure needs to be different
     protected function GCM($alert, $data, $options, $identity_id = null) {
-        if (!empty($data)) {
-            $payload = array_merge($alert, $data);
-        }
 
         $message = [
-            "data" => [
-                "payload" => $payload,
-            ],
+            "notification" => $alert,
+            "data" => $data,
         ];
 
-        if (isset($options['GCM']) && count($options['GCM'])) {
-            $message = array_merge($message, $options['GCM']);
+        if ( !empty($options['GCM']) ) {
+            $message = array_merge_recursive($message, $options['GCM']);
         }
 
         if ( !empty($identity_id) ) {
-            $message['identity_id'] = $identity_id;
+            $message['data']['identity_id'] = $identity_id;
         }
 
-        return $message;
+        $type = $message['data']['org_id'];
+
+        if ( !empty($message['data']['type']) && !empty($message['data']['subtype']) ) {
+            $type = ($message['data']['type'] ?? '') . '_' . ($message['data']['subtype'] ?? '');
+        }
+
+        // start old apps compatibility
+        $message['payload'] = [
+            'title' => $message['notification']['title'] ?? '',
+            'body' => $message['notification']['body'] ?? '',
+            'org_id' => $message['data']['org_id'] ?? '',
+            'click_action' => $message['notification']['clickAction'] ?? '',
+            'link_type' => !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? 'url': null,
+            'link_url' => !empty($message['data']['deeplink']['data']['type']) && $message['data']['deeplink']['data']['type'] == 'url' ? $message['data']['deeplink']['url']: null,
+            'type' => $type,
+        ];
+        // end old apps compatibility
+
+        return [
+            'data' => $message,
+            'priority' => 'high'
+        ];
     }
 }
