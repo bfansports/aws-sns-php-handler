@@ -201,6 +201,12 @@ class SnsHandler {
                     ],
                 ];
 
+                if ( !empty($data['deeplink']) ) {
+                    $dbData['Item']['deeplink'] = [
+                        'M' => $data['deeplink']
+                    ];
+                }
+
                 if (!empty($identity_id)) {
                     $dbData['Item']['identity_id'] = ["S" => $identity_id];
                 }
