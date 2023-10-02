@@ -3,6 +3,7 @@
 namespace SA;
 
 use Aws\Credentials\CredentialProvider;
+use Aws\DynamoDb\Marshaler;
 
 class SnsHandler {
     // AWS DynamoDB handler
@@ -36,6 +37,8 @@ class SnsHandler {
             "version" => "latest",
             "credentials" => $provider,
         ]);
+
+        $this->marshaler = new Marshaler();
     }
 
     // $alert contains default keys handled by both Apple and Google.
@@ -203,7 +206,7 @@ class SnsHandler {
 
                 if ( !empty($data['deeplink']) ) {
                     $dbData['Item']['deeplink'] = [
-                        'M' => $data['deeplink']
+                        'M' => $this->marshaler->marshalItem($data['deeplink'])
                     ];
                 }
 
