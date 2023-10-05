@@ -97,7 +97,15 @@ class SnsHandler {
 
         // Save our message if needed.
         if ($save) {
-            $this->saveNotifInDB($data, $alert, [$endpoint], $identity_id);
+            $this->saveNotifInDB(
+                $data,
+                $alert,
+                [$endpoint],
+                $identity_id,
+                $segments,
+                $marketing,
+                $options
+            );
         }
 
         return $this->sns->publish([
@@ -173,7 +181,8 @@ class SnsHandler {
                 $endpoints,
                 $identity_id,
                 $segments,
-                $marketing
+                $marketing,
+                $options
             );
         }
     }
@@ -184,7 +193,8 @@ class SnsHandler {
         $endpoints,
         $identity_id = null,
         $segments = null,
-        $marketing = false
+        $marketing = false,
+        $options = null
     ) {
         if (isset($alert['body'])) {
             if (empty($alert['title'])) {
@@ -219,6 +229,20 @@ class SnsHandler {
                     $dbData['Item'][
                         'segment_counts'
                     ] = $this->getMarshalledSegmentCounts($segments);
+                }
+
+                $clickAction = null;
+                if ( !empty($options['GCM']['notification']['clickAction'])) {
+                    $clickAction = $options['GCM']['notification']['clickAction'];
+                }
+                elseif ( !empty($options['APNS']['data']['click_action'])) {
+                    $clickAction = $options['APNS']['data']['click_action'];
+                }
+
+                if ( $clickAction ) {
+                    $dbData['Item']['click_action'] = [
+                        'S' => $clickAction
+                    ];
                 }
 
                 $result = $this->ddb->putItem($dbData);
