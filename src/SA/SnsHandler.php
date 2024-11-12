@@ -4,6 +4,8 @@ namespace SA;
 
 use Aws\Credentials\CredentialProvider;
 use Aws\DynamoDb\Marshaler;
+use Aws\DynamoDb\DynamoDbClient;
+use Aws\Sns\SnsClient;
 
 class SnsHandler {
     // AWS DynamoDB handler
@@ -11,6 +13,7 @@ class SnsHandler {
 
     // AWS region for SQS
     private $region;
+    private $marshaler;
 
     // AWS SNS handler
     private $sns;
@@ -26,13 +29,13 @@ class SnsHandler {
 
         $provider = CredentialProvider::defaultProvider();
 
-        $this->sns = new \Aws\Sns\SnsClient([
+        $this->sns = new SnsClient([
             "region" => $region,
             "version" => "latest",
             "credentials" => $provider,
         ]);
 
-        $this->ddb = new \Aws\DynamoDb\DynamoDbClient([
+        $this->ddb = new DynamoDbClient([
             "region" => $region,
             "version" => "latest",
             "credentials" => $provider,
