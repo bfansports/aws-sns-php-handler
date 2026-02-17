@@ -73,6 +73,7 @@ class SnsHandler {
             "default" => $default,
         ];
 
+        $data['sent_at'] = time();
         // Iterate over all providers and inject custom alert message in global message
         foreach ($providers as $provider) {
             if (!method_exists($this, $provider)) {
